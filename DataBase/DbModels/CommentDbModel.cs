@@ -30,6 +30,8 @@ namespace DataBase.DbModels
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
         [Required]
+        public ReportDbModel Report { get; set; }
+        [ForeignKey(nameof(Report))]
 
         public int ReportId { get; set; }
         [Required]
