@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
 using DataAccessLayer.ApiProv;
 using DataAccessLayer.Models;
+using System.Diagnostics.Contracts;
 
 namespace city_reporter_api.Controllers
 {
@@ -21,7 +22,7 @@ namespace city_reporter_api.Controllers
 
         [HttpPost]
         [Authorize(Roles = "User")]
-        public async Task<ActionResult> AddComment([FromBody] int userId, [FromBody] int reportId, [FromBody] DateTime postedOn, [FromBody] string commentContent)
+        public async Task<ActionResult> AddComment(int userId,int reportId,DateTime postedOn,string commentContent)
         {
             try
             {
@@ -62,6 +63,31 @@ namespace city_reporter_api.Controllers
                 {
                     return BadRequest();
                 }
+            }
+        }
+        [HttpGet]
+        [Authorize(Roles ="Guest")]
+        [Route("report/{id}")]
+        public async Task<ActionResult<Comment>> GetComment(int id)
+        {
+            try
+            {
+                Comment returned = await _commentProv.ReadComment(id);
+
+                return Ok(new { 
+                usserId = returned.UserId,
+                reportId = returned.ReportId,
+                postedOn = returned.PostedOn,
+                commentContent = returned.CommentContent
+                });
+            }
+            catch (NullReferenceException exc)
+            {
+                if (exc.Message == "Comment with such a key doesn't exist")
+                {
+                    return NotFound("Comment with such an Id doesn't exist");
+                }
+                return NotFound();
             }
         }
 
