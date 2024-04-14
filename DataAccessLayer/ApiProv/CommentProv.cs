@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer.DbProv;
 using DataAccessLayer.Models;
+using DataBase;
 using DataBase.DbModels;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,15 @@ namespace DataAccessLayer.ApiProv
             _userContext = userContext;
             _reportContext = reportContext;
         }
+
+        public CommentProv()
+        {
+            AppDbContext db = new AppDbContext();
+
+            _context = new CommentContext(db);
+            _reportContext = new ReportContext(db);
+            _userContext = new UserContext(db);
+        }
         public async Task CreateComment(Comment comment)
         {
             if (comment == null)
@@ -37,7 +47,7 @@ namespace DataAccessLayer.ApiProv
             }
             if (commentReport is null)
             {
-                throw new ArgumentNullException("comment is null");
+                throw new ArgumentNullException("report is null");
             }
 
             CommentDbModel newComment = new CommentDbModel(commentUser,comment.UserId,commentReport,comment.ReportId,comment.PostedOn,comment.CommentContent);

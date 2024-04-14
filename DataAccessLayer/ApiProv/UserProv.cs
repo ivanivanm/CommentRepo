@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer.DbProv;
 using DataAccessLayer.Models;
+using DataBase;
 using DataBase.DbModels;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,12 @@ namespace DataAccessLayer.ApiProv
         {
             _userContext = userContext;
         }
+        public UserProv()
+        {
+            AppDbContext db = new AppDbContext();
 
+            _userContext = new UserContext(db);
+        }
         public async Task CreateUser(User user)
         {
             if (user == null)

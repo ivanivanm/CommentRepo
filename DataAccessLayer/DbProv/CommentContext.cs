@@ -17,6 +17,7 @@ namespace DataAccessLayer.DbProv
         {
             _appContext = context;
         }
+
         public async Task Create(CommentDbModel entity)
         {
             if (_appContext.CommentDbModels.Contains(entity))
