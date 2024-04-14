@@ -90,6 +90,30 @@ namespace city_reporter_api.Controllers
                 return NotFound();
             }
         }
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        [Route("{id}")]
+        public async Task<ActionResult> DeleteComment(int id)
+        {
+            try
+            {
+                await _commentProv.DeleteComment(id);
+
+                return Ok();
+            }
+            catch (NullReferenceException exc)
+            {
+                if (exc.Message == "Comment data doesn't exist")
+                {
+                    return NotFound("There aren't any comments on the server");
+                }
+                else if (exc.Message == "Object doesn't exists")
+                {
+                    return NotFound("Comment with such an Id doesn't exist");
+                }
+                return NotFound();
+            }
+        }
 
     }
 }
