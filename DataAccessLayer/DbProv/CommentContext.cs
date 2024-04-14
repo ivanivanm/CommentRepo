@@ -53,7 +53,7 @@ namespace DataAccessLayer.DbProv
 
             if (useNavigationalProperties)
             {
-                comments = comments.Include(c => c.User);
+                comments = comments.Include(c => c.User).Include(c => c.Report);
             }
             if (isReadOnlyTrue)
             {
@@ -74,7 +74,7 @@ namespace DataAccessLayer.DbProv
 
             if (useNavigationalProperties)
             {
-                comments = comments.Include(c => c.User);
+                comments = comments.Include(c => c.User).Include(c => c.Report);
             }
             if (isReadOnlyTrue)
             {
@@ -93,21 +93,30 @@ namespace DataAccessLayer.DbProv
                 throw new NullReferenceException("Object doesn't exists");
             }
 
-            comment.ReportId = entity.ReportId;
-            comment.UserId = entity.UserId;
             comment.CommentContent = entity.CommentContent;
             comment.PostedOn = entity.PostedOn;
 
             if (useNavigationalProperties)
             {
                 UserDbModel user = _appContext.UserDbModels.Find(entity.UserId);
+                ReportDbModel report = _appContext.ReportDbModels.Find(entity.ReportId);
 
                 if (user is null)
                 {
                     UserContext context = new UserContext(_appContext);
                     await context.Create(entity.User);
                 }
+                if (report is null)
+                {
+                    ReportContext context = new ReportContext(_appContext);
+                    await context.Create(entity.Report);
+                }
+
+                comment.ReportId = entity.ReportId;
+                comment.UserId = entity.UserId;
+
                 comment.User = entity.User;
+                comment.Report = entity.Report;
             }
             await _appContext.SaveChangesAsync();
         }

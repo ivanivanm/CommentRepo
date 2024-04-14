@@ -16,6 +16,10 @@ namespace DataAccessLayer.Models
             PostedOn = postedOn;
             CommentContent = commentContent;
         }
+        public Comment()
+        {
+            
+        }
 
         public int Id { get; set; }
         public int ReportId { get; set; }

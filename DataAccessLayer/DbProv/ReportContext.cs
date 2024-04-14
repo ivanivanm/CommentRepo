@@ -27,9 +27,22 @@ namespace DataAccessLayer.DbProv
             await _appDbContext.SaveChangesAsync();
         }
 
-        public Task Delete(int key)
+        public async Task Delete(int key)
         {
-            throw new NotImplementedException();
+            if (_appDbContext.ReportDbModels is null)
+            {
+                throw new NullReferenceException("Report data doesn't exist");
+            }
+
+            ReportDbModel report = _appDbContext.ReportDbModels.Find(key);
+
+            if (report is null)
+            {
+                throw new NullReferenceException("Report doesn't exist");
+            }
+
+            _appDbContext.ReportDbModels.Remove(report);
+            await _appDbContext.SaveChangesAsync();
         }
 
         public async Task<ReportDbModel> Read(int entity, bool useNavigationalProperties = false, bool isReadOnlyTrue = true)
@@ -45,19 +58,55 @@ namespace DataAccessLayer.DbProv
                 reports.AsNoTrackingWithIdentityResolution();
             }
 
-            ReportDbModel report = await reports.FirstOrDefaultAsync(c => c.IdReport == key);
+            ReportDbModel report = await reports.FirstOrDefaultAsync(c => c.IdReport == entity);
 
             return report;
         }
 
-        public Task<List<ReportDbModel>> ReadAll(bool useNavigationalProperties = false, bool isReadOnlyTrue = true)
+        public async Task<List<ReportDbModel>> ReadAll(bool useNavigationalProperties = false, bool isReadOnlyTrue = true)
         {
-            throw new NotImplementedException();
+            IQueryable<ReportDbModel> reports = _appDbContext.ReportDbModels;
+
+            if (useNavigationalProperties)
+            {
+                reports = reports.Include(c => c.User);
+            }
+            if (isReadOnlyTrue)
+            {
+                reports.AsNoTrackingWithIdentityResolution();
+            }
+
+            return await reports.ToListAsync();
         }
 
-        public Task Update(ReportDbModel entity, bool useNavigationalProperties)
+        public async Task Update(ReportDbModel entity, bool useNavigationalProperties)
         {
-            throw new NotImplementedException();
+            ReportDbModel report = await Read(entity.IdReport, useNavigationalProperties, false);
+
+            if (report is null)
+            {
+                throw new NullReferenceException("Report doesn't exist");
+            }
+
+            report.Title = entity.Title;
+            report.Description = entity.Description;
+            report.Location = entity.Location;
+            report.Image = entity.Image;
+            report.UserId = entity.UserId;
+
+            if (useNavigationalProperties)
+            {
+                UserDbModel user = _appDbContext.UserDbModels.Find(entity.UserId);
+
+                if (user is null)
+                {
+                    UserContext context = new UserContext(_appDbContext);
+                    await context.Create(entity.User);
+                }
+                report.User = entity.User;
+            }
+
+            await _appDbContext.SaveChangesAsync();
         }
     }
 }

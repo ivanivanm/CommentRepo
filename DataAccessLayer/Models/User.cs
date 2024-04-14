@@ -16,4 +16,4 @@ namespace DataAccessLayer.Models
         public string Role { get; set; }
     }
 }
-}
+

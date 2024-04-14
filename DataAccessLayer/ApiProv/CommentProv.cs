@@ -13,11 +13,13 @@ namespace DataAccessLayer.ApiProv
     {
         private readonly CommentContext _context;
         private readonly UserContext _userContext;
+        private readonly ReportContext _reportContext;
 
-        public CommentProv(CommentContext context, UserContext userContext)
+        public CommentProv(CommentContext context, UserContext userContext, ReportContext reportContext)
         {
             _context = context;
             _userContext = userContext;
+            _reportContext = reportContext;
         }
         public async Task CreateComment(Comment comment)
         {
@@ -27,13 +29,18 @@ namespace DataAccessLayer.ApiProv
             }
 
             UserDbModel commentUser = await _userContext.Read(comment.UserId);
+            ReportDbModel commentReport = await _reportContext.Read(comment.ReportId);
 
             if (commentUser is null)
             {
                 throw new NullReferenceException("user is null");
             }
+            if (commentReport is null)
+            {
+                throw new ArgumentNullException("comment is null");
+            }
 
-            CommentDbModel newComment = new CommentDbModel(comment.UserId, comment.ReportId, comment.PostedOn, comment.CommentContent, commentUser);
+            CommentDbModel newComment = new CommentDbModel(commentUser,comment.UserId,commentReport,comment.ReportId,comment.PostedOn,comment.CommentContent);
 
             await _context.Create(newComment);
         }
@@ -68,18 +75,23 @@ namespace DataAccessLayer.ApiProv
         {
             if (comment is null)
             {
-                throw new NullReferenceException("Comment doesn't exist");
+                throw new NullReferenceException("Given comment as an argument is null");
             }
 
-            if (comment.UserId == 0)
+            UserDbModel commentUser = await _userContext.Read(comment.UserId);
+            ReportDbModel commentReport = await _reportContext.Read(comment.ReportId);
+
+            if (commentUser is null)
             {
-                throw new NullReferenceException("User doesn't exist");
+                throw new NullReferenceException("user is null");
             }
-
-            UserDbModel userFromDb = await _userContext.Read(comment.UserId);
+            if (commentReport is null)
+            {
+                throw new ArgumentNullException("comment is null");
+            }
 
             CommentDbModel dbComment = new CommentDbModel
-                (comment.UserId, comment.ReportId, comment.PostedOn, comment.CommentContent, userFromDb);
+                (commentUser,comment.UserId,commentReport,comment.ReportId,comment.PostedOn,comment.CommentContent);
             dbComment.Id = comment.Id;
 
             await _context.Update(dbComment, true);

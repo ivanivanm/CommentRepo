@@ -30,6 +30,20 @@ namespace DataBase
         {
             modelBuilder.Entity<CommentDbModel>().Property(c => c.Id).UseIdentityColumn(100000);
             modelBuilder.Entity<UserDbModel>().Property(u => u.Id).UseIdentityColumn(100000);
+            modelBuilder.Entity<ReportDbModel>().Property(r => r.IdReport).UseIdentityColumn(100000);
+
+            modelBuilder.Entity<CommentDbModel>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<CommentDbModel>()
+                .HasOne(c => c.Report)
+                .WithMany()
+                .HasForeignKey(c => c.ReportId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             base.OnModelCreating(modelBuilder);
         }
             
